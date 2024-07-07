@@ -4,52 +4,52 @@ import XCTest
 
 class UTMConversionTests: XCTestCase {
     
-    func testCLLocationCoordinate2D_utmCoordinate() {
-        let osloUTM = oslo.utmCoordinate()
+    func testCLLocationCoordinate2D_utmCoordinate() throws {
+        let osloUTM = try oslo.utmCoordinate()
         XCTAssertEqual(osloUTM.northing, 6643010.0, accuracy: 0.00001);
         XCTAssertEqual(osloUTM.easting, 598430.0, accuracy: 0.00001);
         XCTAssertEqual(osloUTM.zone, 32)
         XCTAssertEqual(osloUTM.hemisphere, .northern)
         
-        let trondheimUTM = trondheim.utmCoordinate()
+        let trondheimUTM = try trondheim.utmCoordinate()
         XCTAssertEqual(trondheimUTM.northing, 7034313, accuracy: 0.00001)
         XCTAssertEqual(trondheimUTM.easting, 569612, accuracy: 0.00001)
         XCTAssertEqual(trondheimUTM.zone, 32)
         XCTAssertEqual(trondheimUTM.hemisphere, .northern)
         
-        let johannesburgUTM = johannesburg.utmCoordinate()
+        let johannesburgUTM = try johannesburg.utmCoordinate()
         XCTAssertEqual(johannesburgUTM.northing, 7100115, accuracy: 0.00001)
         XCTAssertEqual(johannesburgUTM.easting, 603914, accuracy: 0.00001)
         XCTAssertEqual(johannesburgUTM.zone, 35)
         XCTAssertEqual(johannesburgUTM.hemisphere, .southern)
         
-        let buninyongUTM = buninyong.utmCoordinate()
+        let buninyongUTM = try buninyong.utmCoordinate()
         XCTAssertEqual(buninyongUTM.northing, 5828674.33994, accuracy: 0.00001)
         XCTAssertEqual(buninyongUTM.easting, 758173.79835, accuracy: 0.00001)
         XCTAssertEqual(buninyongUTM.zone, 54)
         XCTAssertEqual(buninyongUTM.hemisphere, .southern)
     }
     
-    func testCLLocation_utmCoordinate() {
-        let osloUTM = osloLocation.utmCoordinate()
+    func testCLLocation_utmCoordinate() throws {
+        let osloUTM = try osloLocation.utmCoordinate()
         XCTAssertEqual(osloUTM.northing, 6643010.0, accuracy: 0.00001);
         XCTAssertEqual(osloUTM.easting, 598430.0, accuracy: 0.00001);
         XCTAssertEqual(osloUTM.zone, 32)
         XCTAssertEqual(osloUTM.hemisphere, .northern)
         
-        let trondheimUTM = trondheimLocation.utmCoordinate()
+        let trondheimUTM = try trondheimLocation.utmCoordinate()
         XCTAssertEqual(trondheimUTM.northing, 7034313, accuracy: 0.00001)
         XCTAssertEqual(trondheimUTM.easting, 569612, accuracy: 0.00001)
         XCTAssertEqual(trondheimUTM.zone, 32)
         XCTAssertEqual(trondheimUTM.hemisphere, .northern)
         
-        let johannesburgUTM = johannesburgLocation.utmCoordinate()
+        let johannesburgUTM = try johannesburgLocation.utmCoordinate()
         XCTAssertEqual(johannesburgUTM.northing, 7100115, accuracy: 0.00001)
         XCTAssertEqual(johannesburgUTM.easting, 603914, accuracy: 0.00001)
         XCTAssertEqual(johannesburgUTM.zone, 35)
         XCTAssertEqual(johannesburgUTM.hemisphere, .southern)
         
-        let buninyongUTM = buninyongLocation.utmCoordinate()
+        let buninyongUTM = try buninyongLocation.utmCoordinate()
         XCTAssertEqual(buninyongUTM.northing, 5828674.33994, accuracy: 0.00001)
         XCTAssertEqual(buninyongUTM.easting, 758173.79835, accuracy: 0.00001)
         XCTAssertEqual(buninyongUTM.zone, 54)
@@ -97,6 +97,34 @@ class UTMConversionTests: XCTestCase {
         let oslo = osloUTM.location(datum: UTMDatum(equitorialRadius: 6378137, polarRadius: 6356752.3142))
         XCTAssertEqual(oslo.coordinate.latitude, 59.912814611065265)
         XCTAssertEqual(oslo.coordinate.longitude, 10.760192985178369)
+    }
+    
+    func testInvalidCoordinateLatitude() {
+        let coordinate = CLLocationCoordinate2D(latitude: 90.1, longitude: -180)
+        XCTAssertThrowsError(try coordinate.utmCoordinate()) { error in
+            XCTAssertEqual(error as? UTMConversionError, UTMConversionError.invalidCoordinate)
+        }
+    }
+    
+    func testInvalidCoordinateLongitude() {
+        let coordinate = CLLocationCoordinate2D(latitude: 90, longitude: -180.1)
+        XCTAssertThrowsError(try coordinate.utmCoordinate()) { error in
+            XCTAssertEqual(error as? UTMConversionError, UTMConversionError.invalidCoordinate)
+        }
+    }
+    
+    func testInvalidLocationLatitude() {
+        let location = CLLocation(latitude: -90.1, longitude: 180)
+        XCTAssertThrowsError(try location.utmCoordinate()) { error in
+            XCTAssertEqual(error as? UTMConversionError, UTMConversionError.invalidCoordinate)
+        }
+    }
+    
+    func testInvalidLocationLongitude() {
+        let location = CLLocation(latitude: -90, longitude: 180.1)
+        XCTAssertThrowsError(try location.utmCoordinate()) { error in
+            XCTAssertEqual(error as? UTMConversionError, UTMConversionError.invalidCoordinate)
+        }
     }
 }
 
